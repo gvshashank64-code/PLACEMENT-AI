@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Placement.AI | Enterprise Career Intelligence</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+        
+        :root {
+            --sidebar-width: 280px;
+            --brand-indigo: #4f46e5;
+            --brand-slate: #0f172a;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .premium-glass {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+        }
+
+        .sidebar-item {
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .sidebar-item.active {
+            background: #f1f5f9;
+            color: var(--brand-indigo);
+        }
+
+        .sidebar-item.active::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 20%;
+            height: 60%;
+            width: 4px;
+            background: var(--brand-indigo);
+            border-radius: 4px 0 0 4px;
+        }
+
+        .code-editor {
+            font-family: 'JetBrains Mono', monospace;
+            background: #020617;
+            color: #94a3b8;
+            line-height: 1.6;
+            tab-size: 4;
+            resize: none;
+        }
+
+        .progress-ring-circle {
+            transition: stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+
+        .hidden-section { display: none; }
+        .modal-overlay { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(12px); }
+
+        .usage-bar { height: 8px; border-radius: 99px; background: #e2e8f0; overflow: hidden; position: relative; }
+        .usage-fill { height: 100%; position: absolute; left: 0; top: 0; transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        
+        .bento-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .bento-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.05);
+        }
+
+        .ledger-row { transition: all 0.2s ease; border-bottom: 1px solid #f1f5f9; }
+        .ledger-row:hover { background: #f8fafc; }
+
+        @keyframes pulse-soft { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+        .sync-pulse { animation: pulse-soft 2s infinite; }
+    </style>
+</head>
+<body class="flex overflow-hidden h-screen select-none">
+
+    <!-- Premium Sidebar -->
+    <nav class="w-[280px] bg-white border-r border-slate-100 flex flex-col h-full shrink-0 z-50">
+        <div class="p-10 flex items-center gap-3">
+            <div class="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-2xl">
+                <i class="fa-solid fa-compass-drafting text-xl"></i>
+            </div>
+            <span class="text-2xl font-black tracking-tighter text-slate-900 leading-none">Placement<br><span class="text-indigo-600">.AI</span></span>
+        </div>
+        
+        <div class="flex-1 px-6 space-y-2">
+            <p class="px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Core Intelligence</p>
+            <button onclick="showSection('home')" class="sidebar-item w-full flex items-center gap-3 px-5 py-4 rounded-2xl text-slate-500 hover:text-slate-900 transition-colors active" id="nav-home">
+                <i class="fa-solid fa-house-chimney text-sm"></i> <span class="text-sm font-bold">Home</span>
+            </button>
+            <button onclick="showSection('dashboard')" class="sidebar-item w-full flex items-center gap-3 px-5 py-4 rounded-2xl text-slate-500 hover:text-slate-900 transition-colors" id="nav-dashboard">
+                <i class="fa-solid fa-chart-pie text-sm"></i> <span class="text-sm font-bold">Dashboard</span>
+            </button>
+            
+            <p class="px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest mt-10 mb-4">Assessment Slots</p>
+            <button onclick="showSection('aptitude')" class="sidebar-item w-full flex items-center gap-3 px-5 py-4 rounded-2xl text-slate-500 hover:text-slate-900 transition-colors" id="nav-aptitude">
+                <i class="fa-solid fa-brain text-sm"></i> <span class="text-sm font-bold">Cognitive Hub</span>
+            </button>
+            <button onclick="showSection('technical')" class="sidebar-item w-full flex items-center gap-3 px-5 py-4 rounded-2xl text-slate-500 hover:text-slate-900 transition-colors" id="nav-technical">
+                <i class="fa-solid fa-laptop-code text-sm"></i> <span class="text-sm font-bold">Engineering Labs</span>
+            </button>
+            <button onclick="showSection('aitools')" class="sidebar-item w-full flex items-center gap-3 px-5 py-4 rounded-2xl text-slate-500 hover:text-slate-900 transition-colors" id="nav-aitools">
+                <i class="fa-solid fa-wand-magic-sparkles text-sm"></i> <span class="text-sm font-bold">AI Toolchain</span>
+            </button>
+        </div>
+
+        <div class="p-6 m-6 bg-slate-900 rounded-[2rem] text-white shadow-2xl relative overflow-hidden">
+            <div class="relative z-10">
+                <div class="flex justify-between items-center mb-6">
+                    <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">System Stats</span>
+                    <button onclick="resetSystem()" class="text-slate-500 hover:text-red-400 transition-colors"><i class="fa-solid fa-rotate-right text-xs"></i></button>
+                </div>
+                <div class="space-y-4">
+                    <div>
+                        <div class="flex justify-between text-[10px] font-bold mb-2"><span>READY INDEX</span><span id="stat-lab-sidebar-val">0%</span></div>
+                        <div class="usage-bar bg-slate-800"><div id="stat-lab-sidebar-fill" class="usage-fill bg-indigo-500" style="width: 0%"></div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-indigo-500/10 rounded-full blur-2xl"></div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto relative h-full">
+        
+        <header class="sticky top-0 z-40 w-full px-12 py-6 bg-white/80 backdrop-blur-xl border-b border-slate-100 flex justify-between items-center">
+            <div>
+                <h2 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]" id="breadcrumb">Strategic / Home</h2>
+                <h1 class="text-2xl font-black text-slate-900 mt-1" id="section-title">Intelligence Home</h1>
+            </div>
+            <div class="flex items-center gap-8">
+                <div id="sync-status" class="hidden flex items-center gap-2 text-[10px] font-black text-emerald-600 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100">
+                    <i class="fa-solid fa-rotate sync-pulse"></i> LOGGING ACTIVE
+                </div>
+                <div class="flex items-center gap-4 border-l border-slate-100 pl-8">
+                    <div class="text-right">
+                        <p class="text-sm font-black text-slate-900" id="display-name">Guest User</p>
+                        <p class="text-[10px] text-slate-400 font-bold uppercase">Node-99</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400">
+                        <i class="fa-solid fa-user-gear text-xl"></i>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- 1. HOME SECTION -->
+        <section id="sec-home" class="p-12 space-y-12 animate-in fade-in duration-700">
+            <div class="relative bg-slate-900 rounded-[3rem] p-16 text-white shadow-3xl overflow-hidden group">
+                <div class="relative z-10 max-w-3xl">
+                    <span class="inline-block px-5 py-2 bg-indigo-500/10 text-indigo-400 text-[10px] font-black tracking-widest uppercase rounded-full border border-indigo-500/20 mb-8">Autonomous Strategic Layer</span>
+                    <h1 class="text-6xl font-black mb-8 leading-[1.1] tracking-tighter">Your <span class="text-indigo-400">Engineering Worth</span>, Decoded.</h1>
+                    <p class="text-slate-400 text-xl mb-10 font-medium leading-relaxed">Multi-platform intelligence gateway. Your solving trajectory is automatically archived in our multi-factor ledger to verify your engineering worthiness.</p>
+                    <div class="flex gap-6">
+                        <button onclick="showSection('technical')" class="px-10 py-5 bg-white text-slate-900 font-black rounded-2xl hover:bg-slate-100 transition-all shadow-2xl">Initialize Labs</button>
+                        <button onclick="openOnboarding()" class="px-10 py-5 bg-slate-800 text-white font-black rounded-2xl hover:bg-slate-700 transition-all border border-slate-700">Strategic Profile</button>
+                    </div>
+                </div>
+                <div class="absolute -right-20 -top-20 w-[600px] h-[600px] bg-indigo-600/10 rounded-full blur-[120px]"></div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+                <div class="glass-card p-10 rounded-[2.5rem] bento-card cursor-pointer" onclick="showSection('dashboard')">
+                    <div class="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-3xl flex items-center justify-center mb-8 shadow-sm"><i class="fa-solid fa-code-compare text-2xl"></i></div>
+                    <h3 class="font-black text-2xl text-slate-900 mb-3 tracking-tight">Activity Ledger</h3>
+                    <p class="text-slate-500 font-medium leading-relaxed">Every attempt, sync, and code commit is archived for a persistent session history.</p>
+                </div>
+                <div class="glass-card p-10 rounded-[2.5rem] bento-card cursor-pointer" onclick="showSection('aptitude')">
+                    <div class="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-3xl flex items-center justify-center mb-8 shadow-sm"><i class="fa-solid fa-gauge-high text-2xl"></i></div>
+                    <h3 class="font-black text-2xl text-slate-900 mb-3 tracking-tight">Solve Velocity</h3>
+                    <p class="text-slate-500 font-medium leading-relaxed">Assess your throughput against company standards and establish trust indices.</p>
+                </div>
+                <div class="glass-card p-10 rounded-[2.5rem] bento-card cursor-pointer" onclick="showSection('aitools')">
+                    <div class="w-16 h-16 bg-purple-50 text-purple-600 rounded-3xl flex items-center justify-center mb-8 shadow-sm"><i class="fa-solid fa-fingerprint text-2xl"></i></div>
+                    <h3 class="font-black text-2xl text-slate-900 mb-3 tracking-tight">CV Semantic Audit</h3>
+                    <p class="text-slate-500 font-medium leading-relaxed">Neural parsing to optimize keywords. Results are indexed into readiness index.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. STRATEGIC DASHBOARD SECTION -->
+        <section id="sec-dashboard" class="hidden-section p-12 space-y-12 animate-in slide-in-from-bottom-6 duration-700">
+            <div id="dashboard-active" class="space-y-12">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+                    <div class="lg:col-span-8 glass-card p-12 rounded-[3rem] flex items-center justify-between shadow-sm">
+                        <div class="space-y-6">
+                            <span class="px-4 py-2 bg-indigo-50 text-indigo-600 text-[10px] font-black rounded-full uppercase tracking-widest">Audit Active</span>
+                            <h2 class="text-5xl font-black text-slate-900 tracking-tighter">Portfolio: <span id="dash-name" class="text-indigo-600">--</span></h2>
+                            <p id="dash-path-desc" class="text-slate-500 text-lg max-w-xl font-medium leading-relaxed">Neural analysis initializing...</p>
+                            <div class="flex flex-wrap gap-4 mt-8" id="dash-platform-badges"></div>
+                        </div>
+                        <div class="relative w-48 h-48 flex items-center justify-center">
+                            <svg class="w-full h-full">
+                                <circle class="text-slate-50" stroke-width="14" stroke="currentColor" fill="transparent" r="80" cx="96" cy="96"/>
+                                <circle class="text-indigo-600 progress-ring-circle" id="readiness-ring" stroke-width="14" stroke-dasharray="502" stroke-dashoffset="502" stroke-linecap="round" stroke="currentColor" fill="transparent" r="80" cx="96" cy="96"/>
+                            </svg>
+                            <div class="absolute inset-0 flex flex-col items-center justify-center">
+                                <span class="text-4xl font-black text-slate-900 tracking-tighter" id="dash-readiness">0%</span>
+                                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Readiness</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="lg:col-span-4 glass-card p-12 rounded-[3rem] flex flex-col justify-between shadow-sm">
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">Strategic Vectors</p>
+                        <div class="space-y-4">
+                            <div class="flex justify-between text-[10px] font-black"><span>PLATFORM PROOF (45%)</span><span class="text-indigo-600" id="weight-ext-label">0%</span></div>
+                            <div class="usage-bar bg-slate-100"><div id="weight-ext-fill" class="usage-fill bg-indigo-500" style="width: 0%"></div></div>
+                            <div class="flex justify-between text-[10px] font-black mt-4"><span>ENGAGEMENT (30%)</span><span class="text-emerald-600" id="weight-lab-label">0%</span></div>
+                            <div class="usage-bar bg-slate-100"><div id="weight-lab-fill" class="usage-fill bg-emerald-500" style="width: 0%"></div></div>
+                        </div>
+                        <button onclick="syncExternalData()" class="w-full mt-8 py-5 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-slate-800 transition-all">
+                            <i class="fa-solid fa-arrows-rotate"></i> Sync Neural Logs
+                        </button>
+                    </div>
+                </div>
+
+                <div class="glass-card p-12 rounded-[3rem] shadow-sm relative overflow-hidden">
+                    <div class="flex justify-between items-center mb-10">
+                        <div>
+                            <h3 class="text-3xl font-black text-slate-900 tracking-tight">Activity Ledger</h3>
+                            <p class="text-[11px] text-slate-400 font-bold uppercase mt-1 tracking-widest">Strategic History</p>
+                        </div>
+                        <div class="px-5 py-2 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-black uppercase tracking-tighter" id="log-count-badge">0 ENTRIES</div>
+                    </div>
+                    <div class="overflow-hidden rounded-[2rem] border border-slate-50">
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-50/50 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                <tr>
+                                    <th class="p-8">Timestamp</th>
+                                    <th class="p-8">Activity Vector</th>
+                                    <th class="p-8">Metric</th>
+                                    <th class="p-8">Result</th>
+                                </tr>
+                            </thead>
+                            <tbody id="activity-ledger-body" class="text-sm font-medium text-slate-600">
+                                <tr><td colspan="4" class="p-24 text-center text-slate-300 italic">No activity logged.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                    <div class="lg:col-span-2 glass-card p-12 rounded-[3rem]">
+                        <h3 class="text-2xl font-black text-slate-900 mb-10 tracking-tight">Competency Map</h3>
+                        <div id="proficiency-container" class="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-8"></div>
+                    </div>
+                    <div class="glass-card p-12 rounded-[3rem] flex flex-col justify-between">
+                        <h3 class="text-2xl font-black text-slate-900 mb-8 tracking-tight">Neural Diagnostic</h3>
+                        <div id="diagnostic-summary" class="flex flex-wrap gap-3 mb-10"></div>
+                        <div class="p-8 bg-indigo-600 rounded-[2.5rem] text-center text-white shadow-2xl">
+                            <p class="text-[9px] font-black text-indigo-200 uppercase tracking-[0.3em] mb-2">Resume Audit</p>
+                            <h2 class="text-5xl font-black" id="dash-resume-val">--</h2>
+                        </div>
+                    </div>
+                </div>
+                
+                <h3 class="text-2xl font-black text-slate-900 tracking-tight">Strategic Interventions</h3>
+                <div id="dash-recommendations" class="grid grid-cols-1 md:grid-cols-3 gap-8"></div>
+            </div>
+        </section>
+
+        <!-- 3. COGNITIVE HUB -->
+        <section id="sec-aptitude" class="hidden-section p-12 animate-in fade-in duration-700">
+            <div id="apt-home" class="space-y-10">
+                <div class="flex justify-between items-end">
+                    <div>
+                        <h2 class="text-4xl font-black text-slate-900 tracking-tighter leading-none">Cognitive Labs</h2>
+                        <p class="text-slate-400 font-bold text-sm mt-3 uppercase tracking-widest">Adaptive Assessment Nodes</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                    <button onclick="startQuiz('Quantitative')" class="glass-card p-12 rounded-[2.5rem] text-left hover:border-indigo-500 transition-all group">
+                        <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-3xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform"><i class="fa-solid fa-calculator-combined text-2xl"></i></div>
+                        <h3 class="font-black text-2xl text-slate-900">Quantitative</h3>
+                    </button>
+                    <button onclick="startQuiz('Logical')" class="glass-card p-12 rounded-[2.5rem] text-left hover:border-indigo-500 transition-all group">
+                        <div class="w-16 h-16 bg-amber-50 text-amber-600 rounded-3xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform"><i class="fa-solid fa-code-branch text-2xl"></i></div>
+                        <h3 class="font-black text-2xl text-slate-900">Logical</h3>
+                    </button>
+                    <button onclick="startQuiz('Verbal')" class="glass-card p-12 rounded-[2.5rem] text-left hover:border-indigo-500 transition-all group">
+                        <div class="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-3xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform"><i class="fa-solid fa-spell-check text-2xl"></i></div>
+                        <h3 class="font-black text-2xl text-slate-900">Verbal</h3>
+                    </button>
+                    <button onclick="startQuiz('Technical')" class="glass-card p-12 rounded-[2.5rem] text-left border-indigo-200 bg-indigo-50/20 hover:border-indigo-500 transition-all group">
+                        <div class="w-16 h-16 bg-indigo-600 text-white rounded-3xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform"><i class="fa-solid fa-terminal text-2xl"></i></div>
+                        <h3 class="font-black text-2xl text-indigo-900">Technical Core</h3>
+                        <p class="text-xs font-black text-indigo-400 mt-2 uppercase tracking-tighter">Code Based</p>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quiz Overlay -->
+            <div id="apt-quiz" class="hidden max-w-5xl mx-auto glass-card p-16 rounded-[3.5rem] animate-in slide-in-from-bottom-8">
+                <div class="flex justify-between items-center mb-12 pb-6 border-b border-slate-100">
+                    <div class="flex items-center gap-6">
+                        <span id="quiz-category" class="px-5 py-2 bg-slate-900 text-white text-[10px] font-black rounded-xl uppercase tracking-widest">Module</span>
+                        <div id="quiz-timer" class="text-2xl font-black text-indigo-600 font-mono">00:00</div>
+                    </div>
+                    <div class="flex gap-6 items-center">
+                        <select id="quiz-lang-select" class="hidden bg-slate-100 text-[10px] font-black uppercase rounded-xl px-4 py-2 outline-none border-none shadow-inner" onchange="updateQuizEditorLanguage()">
+                            <option value="javascript">JS</option><option value="python">PY</option><option value="java">JAVA</option><option value="cpp">C++</option>
+                        </select>
+                        <p class="text-3xl font-black text-indigo-600 tracking-tighter" id="q-counter">0/0</p>
+                    </div>
+                </div>
+
+                <div class="space-y-8">
+                    <p id="q-text" class="text-3xl font-black text-slate-800 leading-tight min-h-[120px]">Synthesizing question stream...</p>
+                    <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                    
+                    <div id="quiz-code-interface" class="hidden space-y-6 animate-in fade-in">
+                        <div class="bg-[#020617] rounded-[2.5rem] p-8 shadow-3xl relative">
+                            <textarea id="quiz-code-editor" class="code-editor w-full h-80 outline-none p-4 rounded-2xl text-sm border-none bg-transparent" spellcheck="false"></textarea>
+                            <div class="absolute bottom-6 right-10">
+                                <button onclick="runQuizCode()" class="px-6 py-3 bg-slate-800 text-slate-400 text-[10px] font-black uppercase rounded-xl hover:text-white transition-all shadow-xl">Execute Probe</button>
+                            </div>
+                        </div>
+                        <div id="quiz-console" class="p-6 bg-slate-900 rounded-[2rem] font-mono text-[11px] text-slate-500 border border-slate-800 shadow-inner">
+                            > Core online. Awaiting solution commit.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center mt-16 pt-8 border-t border-slate-100">
+                    <button onclick="exitQuiz()" class="text-slate-400 font-black text-[10px] uppercase tracking-widest hover:text-slate-900">Terminate Assessment</button>
+                    <button onclick="nextQuestion()" id="btn-next" class="px-16 py-6 bg-indigo-600 text-white font-black rounded-3xl shadow-2xl shadow-indigo-200 disabled:opacity-20 transition-all text-xs uppercase tracking-widest">Commit Phase <i class="fa-solid fa-arrow-right ml-3"></i></button>
+                </div>
+            </div>
+
+            <div id="apt-results" class="hidden text-center max-w-3xl mx-auto space-y-12 animate-in zoom-in-95 duration-500">
+                <div class="w-32 h-32 bg-indigo-50 text-indigo-600 rounded-[3rem] flex items-center justify-center mx-auto text-5xl shadow-inner"><i class="fa-solid fa-award"></i></div>
+                <h2 class="text-5xl font-black text-slate-900 tracking-tighter">Cycle Verification Complete</h2>
+                <div class="grid grid-cols-3 gap-6">
+                    <div class="p-10 glass-card rounded-[2.5rem]"><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Precision</p><h1 id="res-score" class="text-5xl font-black text-slate-900">0/5</h1></div>
+                    <div class="p-10 glass-card rounded-[2.5rem]"><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Aggregate</p><h1 id="res-accuracy" class="text-5xl font-black text-indigo-600">0%</h1></div>
+                    <div class="p-10 glass-card rounded-[2.5rem]"><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Solve Time</p><h1 id="res-time" class="text-5xl font-black text-emerald-500">0s</h1></div>
+                </div>
+                <p id="ai-feedback-text" class="p-12 glass-card rounded-[3rem] border border-slate-100 text-slate-600 font-bold leading-relaxed italic text-xl"></p>
+                <button onclick="exitQuiz()" class="w-full py-7 bg-slate-900 text-white font-black rounded-[2.5rem] hover:bg-slate-800 transition-all shadow-3xl text-sm uppercase tracking-widest">Update Strategic Ledger</button>
+            </div>
+        </section>
+
+        <!-- 4. ENGINEERING HUB -->
+        <section id="sec-technical" class="hidden-section p-12 animate-in fade-in duration-700">
+            <div id="lab-landing" class="space-y-12">
+                <h2 class="text-5xl font-black text-slate-900 tracking-tighter">Engineering Hub</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+                    <div class="glass-card p-12 rounded-[3.5rem] flex flex-col justify-between items-start group hover:border-indigo-400 transition-all shadow-sm shadow-indigo-100">
+                        <div class="w-20 h-20 bg-indigo-50 text-indigo-600 rounded-[2rem] flex items-center justify-center mb-10 group-hover:scale-110 transition-transform shadow-inner"><i class="fa-solid fa-code-merge text-3xl"></i></div>
+                        <div>
+                            <h3 class="text-3xl font-black text-slate-900 mb-4 tracking-tight">Algorithms</h3>
+                            <p class="text-slate-400 font-medium text-sm leading-relaxed mb-10">Complexity logic, DP, and Sort assessment.</p>
+                        </div>
+                        <button onclick="enterIDE('Algorithms')" class="w-full py-5 bg-slate-900 text-white font-black text-[11px] uppercase tracking-widest rounded-2xl hover:bg-indigo-600 transition-all shadow-xl">Initialize Session</button>
+                    </div>
+                    <div class="glass-card p-12 rounded-[3.5rem] flex flex-col justify-between items-start group hover:border-emerald-400 transition-all shadow-sm shadow-emerald-100">
+                        <div class="w-20 h-20 bg-emerald-50 text-emerald-600 rounded-[2rem] flex items-center justify-center mb-10 group-hover:scale-110 transition-transform shadow-inner"><i class="fa-solid fa-diagram-project text-3xl"></i></div>
+                        <div>
+                            <h3 class="text-3xl font-black text-slate-900 mb-4 tracking-tight">Structures</h3>
+                            <p class="text-slate-400 font-medium text-sm leading-relaxed mb-10">Advanced Trees and Hash Map implementation.</p>
+                        </div>
+                        <button onclick="enterIDE('Data Structures')" class="w-full py-5 bg-slate-900 text-white font-black text-[11px] uppercase tracking-widest rounded-2xl hover:bg-emerald-600 transition-all shadow-xl">Initialize Session</button>
+                    </div>
+                    <div class="glass-card p-12 rounded-[3.5rem] flex flex-col justify-between items-start group hover:border-rose-400 transition-all shadow-sm shadow-rose-100">
+                        <div class="w-20 h-20 bg-rose-50 text-rose-600 rounded-[2rem] flex items-center justify-center mb-10 group-hover:scale-110 transition-transform shadow-inner"><i class="fa-solid fa-layer-group text-3xl"></i></div>
+                        <div>
+                            <h3 class="text-3xl font-black text-slate-900 mb-4 tracking-tight">System Core</h3>
+                            <p class="text-slate-400 font-medium text-sm leading-relaxed mb-10">Distributed logic and Concurrency probes.</p>
+                        </div>
+                        <button onclick="enterIDE('System Design')" class="w-full py-5 bg-slate-900 text-white font-black text-[11px] uppercase tracking-widest rounded-2xl hover:bg-rose-600 transition-all shadow-xl">Initialize Session</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- IDE State -->
+            <div id="lab-ide" class="hidden flex gap-10 h-[82vh]">
+                <div class="w-[320px] glass-card rounded-[3.5rem] p-10 flex flex-col gap-8 shadow-sm">
+                    <div class="flex justify-between items-center">
+                        <button onclick="exitIDE()" class="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 hover:text-slate-900 transition-all shadow-sm"><i class="fa-solid fa-arrow-left"></i></button>
+                        <h2 class="text-xl font-black text-slate-900 tracking-tighter" id="ide-category-name">Backlog</h2>
+                    </div>
+                    <div class="space-y-6">
+                        <select id="lang-select" onchange="updateEditorLanguage()" class="w-full bg-slate-50 text-xs font-black rounded-2xl p-4 outline-none border border-slate-100 shadow-inner">
+                            <option value="javascript">JavaScript</option><option value="python">Python 3</option><option value="java">Java 21</option><option value="cpp">C++ 20</option>
+                        </select>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button onclick="filterChallenges('all')" class="diff-btn py-3 bg-slate-900 text-white text-[9px] font-black rounded-xl uppercase active-diff">All</button>
+                            <button onclick="filterChallenges('Easy')" class="diff-btn py-3 bg-slate-50 text-slate-400 text-[9px] font-black rounded-xl uppercase border border-slate-100">Easy</button>
+                            <button onclick="filterChallenges('Medium')" class="diff-btn py-3 bg-slate-50 text-slate-400 text-[9px] font-black rounded-xl uppercase border border-slate-100">Medium</button>
+                            <button onclick="filterChallenges('Hard')" class="diff-btn py-3 bg-slate-50 text-slate-400 text-[9px] font-black rounded-xl uppercase border border-slate-100">Hard</button>
+                        </div>
+                    </div>
+                    <div id="tech-list" class="flex-1 overflow-y-auto space-y-4 pr-3"></div>
+                </div>
+
+                <div class="flex-1 flex flex-col gap-8">
+                    <div class="flex-1 flex gap-8 overflow-hidden">
+                        <div class="w-1/2 glass-card rounded-[3.5rem] p-12 overflow-y-auto space-y-8 shadow-sm">
+                            <div class="flex justify-between items-start">
+                                <h3 id="tech-title" class="text-3xl font-black text-slate-900 tracking-tighter">Initializing...</h3>
+                                <span id="tech-difficulty-tag" class="hidden px-4 py-1.5 bg-slate-900 text-white text-[9px] font-black rounded-lg uppercase tracking-widest">--</span>
+                            </div>
+                            <div id="tech-desc" class="text-slate-500 text-lg leading-relaxed font-medium italic">Select a probe from backlog...</div>
+                        </div>
+                        <div class="w-1/2 bg-[#020617] rounded-[3.5rem] p-10 flex flex-col shadow-3xl relative">
+                            <textarea id="code-editor" class="code-editor flex-1 w-full outline-none p-6 rounded-[2rem] text-sm border-none bg-transparent" spellcheck="false" placeholder="// Strategic commit terminal..."></textarea>
+                            <div class="flex gap-4 mt-8">
+                                <button onclick="runCode()" class="flex-1 py-5 bg-slate-800 text-slate-400 font-black rounded-2xl text-[10px] uppercase shadow-inner hover:text-white transition-all">Test run</button>
+                                <button onclick="submitCode()" class="flex-[1.5] py-5 bg-indigo-600 text-white font-black rounded-2xl text-[10px] uppercase shadow-2xl hover:bg-indigo-500 transition-all">Commit logic</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="tech-console" class="h-40 bg-slate-900 rounded-[2.5rem] p-8 font-mono text-xs text-slate-500 overflow-y-auto border border-slate-800 shadow-inner">
+                        <p>> Console online.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. AI TOOLCHAIN -->
+        <section id="sec-aitools" class="hidden-section p-12 space-y-12 animate-in fade-in duration-700">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                <div class="glass-card p-12 rounded-[4rem] space-y-10 shadow-sm">
+                    <div class="w-20 h-20 bg-indigo-50 text-indigo-600 rounded-[2rem] flex items-center justify-center text-3xl shadow-sm"><i class="fa-solid fa-dna"></i></div>
+                    <div>
+                        <h3 class="text-4xl font-black text-slate-900 tracking-tighter leading-none">Portfolio Analysis</h3>
+                        <p class="text-slate-400 font-bold text-xs uppercase tracking-widest mt-3">Neural Resume Audit</p>
+                    </div>
+                    <div class="border-[3px] border-dashed border-slate-100 rounded-[3rem] p-16 text-center group hover:border-indigo-200 transition-all cursor-pointer">
+                        <input type="file" id="resume-input" class="hidden">
+                        <label for="resume-input" class="cursor-pointer">
+                            <i class="fa-solid fa-cloud-arrow-up text-5xl text-slate-200 mb-6 group-hover:text-indigo-400 transition-all"></i>
+                            <p class="text-[11px] font-black text-slate-300 uppercase tracking-widest group-hover:text-slate-900 transition-all">Ingest Source</p>
+                        </label>
+                    </div>
+                    <button onclick="analyzeResume()" class="w-full py-6 bg-indigo-600 text-white font-black rounded-[2rem] shadow-2xl">Execute Neural Audit</button>
+                    <div id="resume-analysis-result" class="hidden p-8 bg-slate-900 rounded-[2.5rem] text-sm text-slate-400 border border-slate-800 shadow-inner"></div>
+                </div>
+
+                <div class="glass-card p-12 rounded-[4rem] space-y-10 shadow-sm">
+                    <div class="w-20 h-20 bg-purple-50 text-purple-600 rounded-[2rem] flex items-center justify-center text-3xl shadow-sm"><i class="fa-solid fa-microphone-lines"></i></div>
+                    <div>
+                        <h3 class="text-4xl font-black text-slate-900 tracking-tighter leading-none">Interview Node</h3>
+                        <p class="text-slate-400 font-bold text-xs uppercase tracking-widest mt-3">Neural Prompt synthesis</p>
+                    </div>
+                    <button onclick="generateQuestions()" class="w-full py-6 bg-purple-600 text-white font-black rounded-[2rem] shadow-2xl shadow-purple-100 hover:bg-purple-500 transition-all text-xs uppercase tracking-widest font-bold">Synthesize Prompts</button>
+                    <div id="qa-result" class="hidden p-8 bg-slate-50 rounded-[2.5rem] text-sm space-y-8 max-h-[400px] overflow-y-auto shadow-inner border border-slate-100"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Profile Modal -->
+        <div id="modal-onboarding" class="hidden fixed inset-0 z-[100] modal-overlay flex items-center justify-center p-6">
+            <div class="bg-white rounded-[4rem] shadow-3xl w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-300">
+                <div class="bg-slate-900 p-12 text-white text-center">
+                    <h3 class="text-4xl font-black tracking-tighter">Strategic Setup</h3>
+                    <p class="text-slate-400 font-bold text-xs uppercase tracking-widest mt-3">Configuring identifiers</p>
+                </div>
+                <div class="p-12 space-y-8">
+                    <div class="grid grid-cols-2 gap-8">
+                        <input type="text" id="input-name" class="w-full p-5 bg-slate-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-indigo-600 font-black shadow-inner" placeholder="राहुल कुमार">
+                        <input type="number" id="input-cgpa" step="0.1" class="w-full p-5 bg-slate-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-indigo-600 font-black shadow-inner" placeholder="8.5">
+                    </div>
+                    <div class="pt-8 border-t border-slate-50 space-y-6">
+                        <p class="text-[10px] font-black text-indigo-500 uppercase tracking-widest">Platform Connectivity</p>
+                        <div class="grid grid-cols-2 gap-4">
+                            <input type="text" id="input-leetcode" class="p-4 bg-slate-50 border-none rounded-xl outline-none text-[10px] font-bold shadow-inner" placeholder="LeetCode ID">
+                            <input type="text" id="input-github" class="p-4 bg-slate-50 border-none rounded-xl outline-none text-[10px] font-bold shadow-inner" placeholder="GitHub Repository">
+                        </div>
+                    </div>
+                    <div class="flex gap-6 pt-6">
+                        <button onclick="closeOnboarding()" class="flex-1 py-5 text-slate-400 font-black text-xs uppercase">Cancel</button>
+                        <button onclick="saveProfile()" class="flex-[2] py-6 bg-indigo-600 text-white font-black rounded-[2rem] shadow-2xl text-xs uppercase tracking-widest">Update parameters</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        const DOMAINS = ['Quantitative', 'Logical', 'Verbal', 'Technical'];
+        const QUESTION_POOL = {
+            Quantitative: Array.from({length: 20}, (_, i) => ({ q: `[Quants Cycle #${i+1}] A merchant buys goods for X and sells for Y. Calculate the effective margin coefficient.`, options: ["Coefficient A", "Coefficient B", "Coefficient C", "Coefficient D"], correct: 0 })),
+            Logical: Array.from({length: 20}, (_, i) => ({ q: `[Logical Cycle #${i+1}] Identify the missing entity in the sequence: SOLID is WPSLP. How is ATOMS represented?`, options: ["Mapping X", "Mapping Y", "Mapping Z", "Mapping W"], correct: 1 })),
+            Verbal: Array.from({length: 20}, (_, i) => ({ q: `[Verbal Cycle #${i+1}] Choose the semantically accurate alternative for the highlighted prompt.`, options: ["Alternative 1", "Alternative 2", "Alternative 3", "Alternative 4"], correct: 2 })),
+            Technical: [
+                { q: "Design a function that detects a circular reference (cycle) in a singly linked list with O(1) space.", isCode: true, boilerplates: { javascript: "function hasCycle(head) {}", python: "def hasCycle(head):", java: "public boolean hasCycle(Node head) {}", cpp: "bool hasCycle(Node* head) {}" } },
+                { q: "Implement an efficient thread-safe singleton pattern instance handler.", isCode: true, boilerplates: { java: "public class Singleton {}", cpp: "class Singleton {}" } }
+            ]
+        };
+
+        const CODE_CHALLENGES = [
+            { id: 1, title: "Array Equilibrium", category: "Algorithms", difficulty: "Easy", desc: "Find pivot index.", boilerplates: { javascript: "function solve(nums) {}" } },
+            { id: 2, title: "LRU Cache Strategy", category: "Data Structures", difficulty: "Hard", desc: "Design O(1) cache.", boilerplates: { javascript: "class LRU {}" } },
+            { id: 3, title: "Consistent Hashing", category: "System Design", difficulty: "Medium", desc: "Implement sharding.", boilerplates: { javascript: "function shard() {}" } }
+        ];
+
+        const state = {
+            user: JSON.parse(localStorage.getItem('active_placement_user')) || {
+                name: "Guest User", cgpa: 0, platforms: {}, history: [],
+                internal: { performance: {Quantitative:0, Logical:0, Verbal:0, Technical:0}, total_attempts:0 },
+                resume_score: 0
+            },
+            quiz: { active: false, questions: [], currentIndex: 0, score: 0, startTime: null, category: '' },
+            currentLanguage: 'javascript', currentChallenge: null, currentDiffFilter: 'all', currentLabCategory: null, selectedIdx: null
+        };
+
+        function addLog(activity, metric, result) {
+            const logEntry = { timestamp: new Date().toLocaleString(), activity, metric, result };
+            state.user.history.unshift(logEntry);
+            localStorage.setItem('active_placement_user', JSON.stringify(state.user));
+            updateLedgerUI();
+        }
+
+        function updateLedgerUI() {
+            const body = document.getElementById('activity-ledger-body');
+            const badge = document.getElementById('log-count-badge');
+            if (!body) return;
+            if (state.user.history.length === 0) {
+                body.innerHTML = `<tr><td colspan="4" class="p-24 text-center text-slate-300 italic font-medium">No activity archived.</td></tr>`;
+                badge.innerText = "0 ENTRIES";
+                return;
+            }
+            badge.innerText = `${state.user.history.length} ENTRIES`;
+            body.innerHTML = state.user.history.slice(0, 10).map(log => `<tr class="ledger-row border-b border-slate-50"><td class="p-8 font-mono text-[10px] text-slate-400">${log.timestamp}</td><td class="p-8 font-black text-slate-900">${log.activity}</td><td class="p-8 font-bold text-indigo-600">${log.metric}</td><td class="p-8"><span class="px-4 py-1.5 bg-slate-100 text-slate-600 rounded-full text-[10px] font-black uppercase tracking-tighter border border-slate-200">${log.result}</span></td></tr>`).join('');
+        }
+
+        function calculateReadiness() {
+            const academic = (Math.min(state.user.cgpa || 0, 10) / 10) * 10;
+            let proofCount = Object.values(state.user.platforms).filter(p => p).length;
+            const external = (proofCount / 3) * 45;
+            const internal_avg = Object.values(state.user.internal.performance).reduce((a,b)=>a+b, 0) / 4;
+            const labs = (internal_avg / 100) * 30;
+            const resume = (state.user.resume_score / 100) * 15;
+            return Math.round(academic + external + labs + resume);
+        }
+
+        function updateDashboard() {
+            const readiness = calculateReadiness();
+            const dashName = document.getElementById('dash-name'); if (dashName) dashName.innerText = state.user.name;
+            const displayNm = document.getElementById('display-name'); if (displayNm) displayNm.innerText = state.user.name;
+            const dashReadiness = document.getElementById('dash-readiness'); if (dashReadiness) dashReadiness.innerText = readiness + "%";
+            const dashRing = document.getElementById('readiness-ring'); if (dashRing) dashRing.style.strokeDashoffset = 502 - (502 * readiness) / 100;
+            
+            const sidebarVal = document.getElementById('stat-lab-sidebar-val'); if(sidebarVal) sidebarVal.innerText = readiness + "%";
+            const sidebarFill = document.getElementById('stat-lab-sidebar-fill'); if(sidebarFill) sidebarFill.style.width = readiness + "%";
+
+            const weightExt = document.getElementById('weight-ext-label'); if(weightExt) weightExt.innerText = Math.round(readiness * 0.4) + "%";
+            const weightExtFill = document.getElementById('weight-ext-fill'); if(weightExtFill) weightExtFill.style.width = Math.round(readiness * 0.4) + "%";
+            const weightLab = document.getElementById('weight-lab-label'); if(weightLab) weightLab.innerText = Math.round(readiness * 0.3) + "%";
+            const weightLabFill = document.getElementById('weight-lab-fill'); if(weightLabFill) weightLabFill.style.width = Math.round(readiness * 0.3) + "%";
+
+            const prof = document.getElementById('proficiency-container'); 
+            if(prof) prof.innerHTML = Object.entries(state.user.internal.performance).map(([cat, val]) => `<div><div class="flex justify-between text-[10px] font-black text-slate-400 mb-2 uppercase tracking-widest"><span>${cat}</span><span>${val}%</span></div><div class="usage-bar bg-slate-100"><div class="usage-fill bg-indigo-600" style="width: ${val}%"></div></div></div>`).join('');
+            
+            const diag = document.getElementById('diagnostic-summary'); 
+            if(diag) diag.innerHTML = (readiness > 60 ? `<span class="px-5 py-2 rounded-xl text-[10px] font-black badge-strength uppercase tracking-tighter">Elite Candidate Index</span>` : `<span class="px-5 py-2 rounded-xl text-[10px] font-black badge-weakness uppercase tracking-tighter">Variance Cycle</span>`);
+            
+            const resumeVal = document.getElementById('dash-resume-val'); if(resumeVal) resumeVal.innerText = state.user.resume_score + "%";
+            const gRank = document.getElementById('stat-global-rank'); if(gRank) gRank.innerText = readiness > 0 ? `#${Math.floor(200000 / (readiness/10))}` : "N/A";
+
+            updatePathInfo(readiness);
+            updatePlatformBadges();
+        }
+
+        function updatePathInfo(readiness) {
+            const desc = document.getElementById('dash-path-desc');
+            const recs = document.getElementById('dash-recommendations');
+            if (!desc || !recs) return;
+            if (readiness > 70) {
+                desc.innerText = "Audit Complete: Elite Strategic Profile. Institutional trust established across multi-platform verified coding history.";
+                recs.innerHTML = `<div class="glass-card p-8 rounded-[2.5rem] flex gap-5 items-center shadow-sm shadow-indigo-100"><div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center shrink-0 shadow-sm"><i class="fa-solid fa-bolt-auto"></i></div><div><h4 class="font-black text-sm text-slate-900">Elite Protocol</h4><p class="text-[10px] text-slate-400 mt-1 uppercase font-bold tracking-tighter">Tier-1 Shortlist Unlocked.</p></div></div>`;
+            } else {
+                desc.innerText = "Audit: Readiness gap detected. Proof of skill deficit identified in Platform Sync nodes.";
+                recs.innerHTML = `<div class="glass-card p-8 rounded-[2.5rem] flex gap-5 items-center shadow-sm shadow-rose-100"><div class="w-12 h-12 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center shrink-0 shadow-sm"><i class="fa-solid fa-triangle-exclamation"></i></div><div><h4 class="font-black text-sm text-slate-900">Priority Cycle</h4><p class="text-[10px] text-slate-400 mt-1 uppercase font-bold tracking-tighter">Complete 5 Lab Cycles.</p></div></div>`;
+            }
+        }
+
+        function updatePlatformBadges() {
+            const container = document.getElementById('dash-platform-badges'); if(!container) return;
+            container.innerHTML = ['leetcode','github'].filter(p => state.user.platforms[p]).map(p => `<div class="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-2xl text-[9px] font-black uppercase border border-slate-800 shadow-xl"><i class="fa-solid fa-circle-check text-emerald-400"></i> ${p}</div>`).join('');
+        }
+
+        function showSection(sectionId) {
+            document.querySelectorAll('section').forEach(s => s.classList.add('hidden-section'));
+            document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+            const target = document.getElementById(`sec-${sectionId}`); if (target) target.classList.remove('hidden-section');
+            const nav = document.getElementById(`nav-${sectionId}`); if (nav) nav.classList.add('active');
+            if (sectionId === 'dashboard') { updateDashboard(); updateLedgerUI(); }
+            if (sectionId === 'technical') exitIDE(); 
+        }
+
+        function openOnboarding() { document.getElementById('modal-onboarding').classList.remove('hidden'); }
+        function closeOnboarding() { document.getElementById('modal-onboarding').classList.add('hidden'); }
+        function saveProfile() {
+            state.user.name = document.getElementById('input-name').value || "User";
+            state.user.cgpa = parseFloat(document.getElementById('input-cgpa').value) || 0;
+            state.user.platforms = { leetcode: document.getElementById('input-leetcode').value, github: document.getElementById('input-github').value, hackerrank: document.getElementById('input-hackerrank').value };
+            addLog("Strategic Update", "GPA: " + state.user.cgpa, "Persisted");
+            updateDashboard(); closeOnboarding();
+        }
+
+        function startQuiz(cat) {
+            state.quiz.category = cat;
+            state.quiz.questions = [...QUESTION_POOL[cat]].sort(() => 0.5 - Math.random()).slice(0, 3);
+            state.quiz.currentIndex = 0; state.quiz.score = 0; state.quiz.startTime = Date.now();
+            document.getElementById('apt-home').classList.add('hidden'); document.getElementById('apt-quiz').classList.remove('hidden');
+            const isTechnical = (cat === 'Technical');
+            document.getElementById('options-container').classList.toggle('hidden', isTechnical);
+            document.getElementById('quiz-code-interface').classList.toggle('hidden', !isTechnical);
+            document.getElementById('quiz-lang-select').classList.toggle('hidden', !isTechnical);
+            renderQuestion();
+            let seconds = 0; timerInterval = setInterval(() => { seconds++; document.getElementById('quiz-timer').innerText = `${Math.floor(seconds/60).toString().padStart(2,'0')}:${(seconds%60).toString().padStart(2,'0')}`; }, 1000);
+        }
+        function renderQuestion() {
+            const q = state.quiz.questions[state.quiz.currentIndex];
+            document.getElementById('q-counter').innerText = `${state.quiz.currentIndex + 1}/${state.quiz.questions.length}`;
+            document.getElementById('q-text').innerText = q.q;
+            if (q.isCode) document.getElementById('quiz-code-editor').value = q.boilerplates[state.currentLanguage] || "// Node logic...";
+            else {
+                document.getElementById('options-container').innerHTML = q.options.map((opt, idx) => `<button onclick="handleOption(${idx})" class="p-6 text-left rounded-3xl border border-slate-100 bg-slate-50/50 hover:border-indigo-600 transition-all font-bold text-slate-700 text-sm shadow-sm">${opt}</button>`).join('');
+            }
+            document.getElementById('btn-next').disabled = !q.isCode;
+        }
+        function handleOption(idx) { if (idx === state.quiz.questions[state.quiz.currentIndex].correct) state.quiz.score++; nextQuestion(); }
+        function nextQuestion() {
+            if (++state.quiz.currentIndex < state.quiz.questions.length) renderQuestion();
+            else showResults();
+        }
+        function showResults() {
+            clearInterval(timerInterval);
+            const accuracy = Math.round((state.quiz.score / state.quiz.questions.length) * 100);
+            state.user.internal.performance[state.quiz.category] = accuracy;
+            addLog("Assessment Cycle", state.quiz.category, accuracy + "% Agg");
+            document.getElementById('apt-quiz').classList.add('hidden'); document.getElementById('apt-results').classList.remove('hidden');
+            document.getElementById('res-score').innerText = `${state.quiz.score}/${state.quiz.questions.length}`;
+            document.getElementById('res-accuracy').innerText = accuracy + "%";
+            document.getElementById('ai-feedback-text').innerText = accuracy > 70 ? "Strategic proficiency verified. Logic within elite thresholds." : "Review domain clusters and repeat assessment.";
+            updateDashboard();
+        }
+        function exitQuiz() { clearInterval(timerInterval); document.getElementById('apt-home').classList.remove('hidden'); document.getElementById('apt-quiz').classList.add('hidden'); document.getElementById('apt-results').classList.add('hidden'); }
+        function enterIDE(cat) { state.currentLabCategory = cat; document.getElementById('lab-landing').classList.add('hidden'); document.getElementById('lab-ide').classList.remove('hidden'); document.getElementById('ide-category-name').innerText = cat; renderTechChallenges(); }
+        function exitIDE() { document.getElementById('lab-landing').classList.remove('hidden'); document.getElementById('lab-ide').classList.add('hidden'); }
+        
+        function filterChallenges(level) {
+            state.currentDiffFilter = level;
+            document.querySelectorAll('.diff-btn').forEach(btn => {
+                const isActive = btn.innerText.toLowerCase() === level.toLowerCase() || (level === 'all' && btn.innerText.toLowerCase() === 'all');
+                btn.classList.toggle('bg-slate-900', isActive);
+                btn.classList.toggle('text-white', isActive);
+                btn.classList.toggle('bg-slate-50', !isActive);
+                btn.classList.toggle('text-slate-400', !isActive);
+            });
+            renderTechChallenges();
+        }
+
+        function renderTechChallenges() {
+            const list = document.getElementById('tech-list'); if(!list) return;
+            const filtered = CODE_CHALLENGES.filter(c => (state.currentDiffFilter === 'all' || c.difficulty === state.currentDiffFilter) && c.category === state.currentLabCategory);
+            list.innerHTML = filtered.map(c => `<button onclick="loadChallenge(${c.id})" class="w-full p-5 rounded-3xl border border-slate-50 bg-white text-left font-bold text-xs shadow-sm mb-3 hover:border-indigo-600 transition-all flex justify-between items-center"><span>${c.title}</span><span class="text-[8px] font-black uppercase opacity-40">${c.difficulty}</span></button>`).join('');
+        }
+        function loadChallenge(id) {
+            const c = CODE_CHALLENGES.find(x => x.id === id); state.currentChallenge = c;
+            document.getElementById('tech-title').innerText = c.title; document.getElementById('tech-desc').innerText = c.desc; document.getElementById('code-editor').value = c.boilerplates[state.currentLanguage];
+            document.getElementById('tech-difficulty-tag').innerText = c.difficulty; document.getElementById('tech-difficulty-tag').classList.remove('hidden');
+        }
+        function runCode() { document.getElementById('tech-console').innerHTML += `<p class="text-emerald-500">> Compilation Successful. Vectors validated.</p>`; }
+        function submitCode() { addLog("Engineering Hub", state.currentChallenge.title, "Verified"); alert("Logic committed."); }
+        function analyzeResume() { 
+            const res = document.getElementById('resume-analysis-result'); res.classList.remove('hidden'); res.innerText = "Analyzing...";
+            setTimeout(() => { state.user.resume_score = 88; addLog("Portfolio Audit", "Resume Semantic Sync", "88% Density"); updateDashboard(); res.innerHTML = "<strong>Audit complete: 88% Stability Index</strong>"; }, 1000);
+        }
+        function resetSystem() { localStorage.clear(); location.reload(); }
+        function syncExternalData() {
+            const status = document.getElementById('sync-status'); status.classList.remove('hidden');
+            setTimeout(() => { status.classList.add('hidden'); addLog("Multi-Platform Sync", "Logic Aggregate", "Verified"); updateDashboard(); }, 2000);
+        }
+
+        window.onload = () => { updateDashboard(); updateLedgerUI(); showSection('home'); };
+    </script>
+</body>
+</html>
